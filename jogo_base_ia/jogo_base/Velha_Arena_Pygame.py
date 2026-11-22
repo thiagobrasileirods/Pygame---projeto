@@ -290,6 +290,11 @@ class BoardModel:
             self.turn = 1 - self.turn
         return True
 
+    #Autoria de Thiago Brasileiro:
+    def free_cells(self):
+        """Retorna a quantidade de casas ainda vazias no tabuleiro."""
+        return sum(1 for cell in self.cells if cell is None)
+
 
 class BoardScene(Scene):
     title = "02 / TABULEIRO"
