@@ -599,6 +599,13 @@ class WeaponScene(Scene):
         self.active, self.ready = 0, [False, False]
         self.cards = [pygame.Rect(50 + i * 202, 253, 192, 310) for i in range(5)]
 
+    #Autoria de Thiago Brasileiro
+    def randomize_weapon(self):
+        """Escolhe uma arma aleatória para o jogador ativo."""
+        self.app.state["weapons"][self.active] = random.randrange(len(WEAPONS))
+        self.ready[self.active] = False
+        self.app.audio.play("select")
+
     def handle_event(self, event):
         for player in range(2):
             if clicked(event, (100 + player * 460, 157, 430, 60)):
@@ -617,6 +624,11 @@ class WeaponScene(Scene):
                 self.active = 1 - self.active
         elif clicked(event, (50, 625, 230, 56)):
             self.app.change_scene("tabuleiro")
+        #Autoria de Thiago Brasileiro
+        elif clicked(event, (50, 625, 230, 56)):
+            self.app.change_scene("tabuleiro")
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+            self.randomize_weapon()
 
     def draw(self, surface):
         super().draw(surface)
@@ -634,7 +646,8 @@ class WeaponScene(Scene):
                        f"Intervalo: {weapon['cooldown']} ms", f"Alcance: {int(weapon['speed'] * weapon['ttl'])} px")
             for row, label in enumerate(details):
                 text(surface, label, 15, (rect.x + 15, 437 + row * 27), MUTED)
-        text(surface, "Cada jogador confirma sua escolha. As armas podem se repetir.", 17, (550, 593), MUTED, True)
+        #Autoria de Thiago Brasileiro a linha 650
+        text(surface, "Cada jogador confirma sua escolha (R sorteia arma). As armas podem se repetir.", 17, (550, 593), MUTED, True)
         button(surface, "Voltar ao tabuleiro", (50, 625, 230, 56))
         button(surface, f"Confirmar J{self.active + 1} / Enter", (730, 625, 320, 56), True)
 
