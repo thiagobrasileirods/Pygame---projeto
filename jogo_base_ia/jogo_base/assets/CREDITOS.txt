@@ -1,0 +1,10 @@
+VELHA ARENA — FIGHT : CLUB
+
+Ícones: ilustrações geométricas originais geradas para este projeto.
+Os nomes dos símbolos são referências temáticas; as imagens não são logotipos oficiais.
+Áudio: oito arquivos WAV originais sintetizados para este projeto, sem amostras externas.
+Fontes: DejaVu Sans (Text.ttf) e DejaVu Sans Condensed Bold (Display.ttf), versão 2.37.
+Origem: https://github.com/dejavu-fonts/dejavu-fonts/releases/tag/version_2_37
+Licença integral preservada em fonts/LICENSE-DejaVu.txt.
+Este material de base foi gerado com assistência de IA; os marcadores de reescrita
+no jogo indicam trabalho autoral futuro da equipe, e não autoria já realizada.
