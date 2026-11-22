@@ -248,6 +248,13 @@ class MenuScene(Scene):
         button(surface, "Ajuda", (390, 568, 320, 54))
         text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 666), MUTED, True)
 
+    # Autoria de Rodrigo Bartolo
+    def draw_preview_icons(self, surface):
+        # Desenha os ícones atuais de J1 e J2 nas laterais do menu.
+        s0, s1 = self.app.state["symbols"]
+        draw_symbol(surface, s0, (170, 320), 110, P1)
+        draw_symbol(surface, s1, (930, 320), 110, P2)
+
 
 # 05. TABULEIRO: MODELO E TELA ------------------------------------------------
 class BoardModel:
