@@ -297,6 +297,11 @@ class BoardModel:
             self.turn = 1 - self.turn
         return True
 
+    #Autoria de Thiago Brasileiro:
+    def free_cells(self):
+        """Retorna a quantidade de casas ainda vazias no tabuleiro."""
+        return sum(1 for cell in self.cells if cell is None)
+
 
 class BoardScene(Scene):
     title = "02 / TABULEIRO"
@@ -322,6 +327,14 @@ class BoardScene(Scene):
             elif self.model.draw:
                 self.app.audio.play("draw")
                 self.app.change_scene("armas")
+    #Autoria de Thiago Brasileiro:
+    def draw_hover(self, surface):
+        """Destaca a casa livre sob o cursor do mouse."""
+        mouse_pos = pygame.mouse.get_pos()
+        color = PLAYER_COLORS[self.model.turn]
+        for index, rect in enumerate(self.cells):
+            if self.model.cells[index] is None and rect.collidepoint(mouse_pos):
+                pygame.draw.rect(surface, color, rect, 3, border_radius=12)
 
     def draw(self, surface):
         super().draw(surface)
@@ -334,11 +347,13 @@ class BoardScene(Scene):
                 text(surface, index + 1, 20, rect.center, MUTED, True)
             else:
                 draw_symbol(surface, self.app.state["symbols"][owner], rect.center, 98, PLAYER_COLORS[owner])
+        self.draw_hover(surface)
         for owner, x in ((0, 110), (1, 910)):
             draw_symbol(surface, self.app.state["symbols"][owner], (x + 35, 330), 84, PLAYER_COLORS[owner])
             text(surface, f"J{owner + 1}", 28, (x + 35, 410), PLAYER_COLORS[owner], True)
             text(surface, f"{self.app.state['scores'][owner]} pontos", 18, (x + 35, 454), MUTED, True)
-        text(surface, "1–9 ou clique / empate abre a seleção de armas", 18, (550, 688), MUTED, True)
+        #Autoria de Thiago Brasileiro
+        text(surface, f"Casas livres: {self.model.free_cells()}  |  1–9 ou clique", 18, (550, 688), MUTED, True)
 
 
 
@@ -401,6 +416,16 @@ class BattleWorld:
                              invulnerable=0.7, cooldown=0.0) for x in (150, 950)]
         self.bullets, self.winner = [], None
         self.time, self.notice = 0.0, 0.0
+
+    #Autoria de Thiago Brasileiro
+    def distance_between_players(self):
+            """Retorna a distância euclidiana entre J1 e J2."""
+            return self.players[0]["pos"].distance_to(self.players[1]["pos"])
+    #Autoria de Thiago Brasileiro
+    def is_overtime(self, limit=45.0): #45 pq eu quis mesmo, nada em particular
+        """Retorna True quando o duelo ultrapassa o tempo normal."""
+        return self.time >= limit
+    
 
     def move_player(self, index, direction, dt):
         """Normaliza a direção e resolve os eixos com subpassos de até 8 px."""
@@ -675,6 +700,11 @@ class ArenaScene(Scene):
 
     def draw(self, surface):
         super().draw(surface)
+        #Autoria de Thiago Brasileiro
+        dist = int(self.world.distance_between_players())
+        text(surface, f"Distância: {dist} px", 15, (550, 100), MUTED, True) #ate aqui
+        if self.world.is_overtime():
+            text(surface, "PRORROGAÇÃO!", 20, (550, 148), P2, True, True)
         for index, player in enumerate(self.world.players):
             color = PLAYER_COLORS[index]
             x = 80 if index == 0 else 650
@@ -727,6 +757,13 @@ class WeaponScene(Scene):
         self.active, self.ready = 0, [False, False]
         self.cards = [pygame.Rect(50 + i * 202, 253, 192, 310) for i in range(5)]
 
+    #Autoria de Thiago Brasileiro
+    def randomize_weapon(self):
+        """Escolhe uma arma aleatória para o jogador ativo."""
+        self.app.state["weapons"][self.active] = random.randrange(len(WEAPONS))
+        self.ready[self.active] = False
+        self.app.audio.play("select")
+
     def handle_event(self, event):
         for player in range(2):
             if clicked(event, (100 + player * 460, 157, 430, 60)):
@@ -743,8 +780,12 @@ class WeaponScene(Scene):
                 self.app.change_scene("arena")
             else:
                 self.active = 1 - self.active
+        
+        #Autoria de Thiago Brasileiro
         elif clicked(event, (50, 625, 230, 56)):
             self.app.change_scene("tabuleiro")
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+            self.randomize_weapon()
 
     def draw(self, surface):
         super().draw(surface)
@@ -762,7 +803,8 @@ class WeaponScene(Scene):
                        f"Intervalo: {weapon['cooldown']} ms", f"Alcance: {int(weapon['speed'] * weapon['ttl'])} px")
             for row, label in enumerate(details):
                 text(surface, label, 15, (rect.x + 15, 437 + row * 27), MUTED)
-        text(surface, "Cada jogador confirma sua escolha. As armas podem se repetir.", 17, (550, 593), MUTED, True)
+        #Autoria de Thiago Brasileiro a linha 650
+        text(surface, "Cada jogador confirma sua escolha (R sorteia arma). As armas podem se repetir.", 17, (550, 593), MUTED, True)
         button(surface, "Voltar ao tabuleiro", (50, 625, 230, 56))
         button(surface, f"Confirmar J{self.active + 1} / Enter", (730, 625, 320, 56), True)
 
