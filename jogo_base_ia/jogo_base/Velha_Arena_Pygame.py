@@ -21,18 +21,18 @@ except ImportError:
 
 WIDTH, HEIGHT, FPS = 1100, 760, 60
 ASSETS = Path(__file__).resolve().parent / "assets"
-BG, PANEL = (23, 27, 31), (37, 44, 50)
-CREAM, TEXT, MUTED = (244, 234, 209), (241, 238, 224), (164, 177, 182)
-P1, P2 = (195, 242, 73), (255, 146, 83)
+BG, PANEL = (10, 12, 16), (18, 30, 52)
+CREAM, TEXT, MUTED = (242, 232, 204), (244, 246, 250), (132, 148, 174)
+P1, P2 = (224, 180, 62), (64, 138, 230)
 PLAYER_COLORS = (P1, P2)
-SYMBOLS = ("67", "Diamante", "Nether", "ChatGPT", "Claude", "Python",
-           "Caveira", "Fogo", "Fantasma", "Raposa")
+SYMBOLS = ("67", "Insper", "FGV", "Grok", "ChatGPT", "Claude",
+           "Gemini", "Bob", "Batman", "Miranha")
 WEAPONS = [
     dict(name="Pistola", cooldown=420, speed=650, damage=1, count=1, spread=0, radius=5, ttl=1.5),
     dict(name="SMG", cooldown=150, speed=710, damage=1, count=1, spread=0, radius=4, ttl=1.2),
     dict(name="Escopeta", cooldown=820, speed=590, damage=1, count=3, spread=28, radius=5, ttl=0.52),
-    dict(name="Precisão", cooldown=1050, speed=1200, damage=2, count=1, spread=0, radius=3, ttl=1.5),
-    dict(name="Canhão", cooldown=1200, speed=380, damage=2, count=1, spread=0, radius=13, ttl=2.6),
+    dict(name="Precisão", cooldown=1100, speed=1800, damage=2, count=1, spread=0, radius=3, ttl=1.5),
+    dict(name="Canhão", cooldown=1200, speed=380, damage=3, count=1, spread=0, radius=13, ttl=2.6),
 ]
 SCENES = ("inicio", "ajuda", "simbolos", "tabuleiro", "armas", "arena", "resultado")
 RESOURCES = {}
@@ -550,10 +550,26 @@ class ArenaScene(Scene):
             pygame.draw.circle(surface, PLAYER_COLORS[bullet['owner']], bullet['pos'], bullet['radius'])
         for index, player in enumerate(self.world.players):
             color, pos = PLAYER_COLORS[index], player['pos']
+            rival_pos = self.world.players[1 - index]['pos']
+
+            # Sombra discreta no chão + anel apenas quando estiver invulnerável
+            pygame.draw.ellipse(surface, (14, 16, 20), (pos.x - 18, pos.y + 14, 36, 10))
             if player['invulnerable'] > 0:
-                pygame.draw.circle(surface, CREAM, pos, 27, 2)
-            pygame.draw.circle(surface, color, pos, 22)
-            draw_symbol(surface, self.app.state['symbols'][index], pos, 32, BG)
+                pygame.draw.circle(surface, color, pos, 28, 2)
+
+            # Desenha a arma escolhida, espelhada para apontar para o lado do rival
+            weapon_id = self.world.weapons[index]
+            img = RESOURCES["images"].get(("arma", weapon_id))
+            if img is not None:
+                sprite = pygame.transform.smoothscale(img, (54, 54))
+                if rival_pos.x < pos.x:
+                    sprite = pygame.transform.flip(sprite, True, False)
+                surface.blit(sprite, sprite.get_rect(center=(round(pos.x), round(pos.y))))
+            else:
+                draw_icon(surface, "arma", weapon_id, pos, 54)
+
+            # Etiqueta pequena J1/J2 acima da arma para identificar o jogador
+            text(surface, f"J{index + 1}", 14, (pos.x, pos.y - 32), color, True, True)
         text(surface, 'J1: WASD + F     |     J2: SETAS + ENTER     |     ESC: PAUSA', 17, (550, 683), MUTED, True)
         if self.world.notice > 0:
             panel(surface, pygame.Rect(280, 183, 540, 42), CREAM)
