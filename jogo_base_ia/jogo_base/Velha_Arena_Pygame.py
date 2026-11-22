@@ -174,10 +174,12 @@ class SymbolScene(Scene):
         elif clicked(event, (90, 628, 210, 54)) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             self.app.change_scene("inicio")
 
-    def sortear_simbolos(jogo, recursos):
-        escolhidos = random.sample(range(10), 2)
-        jogo["simbolos"] = escolhidos
-        tocar(recursos, "select")
+    # Autoria de Rodrigo Bartolo
+    def sortear_simbolos(self):
+        """Sorteia dois símbolos distintos para J1 e J2."""
+        self.app.state["symbols"] = random.sample(range(len(SYMBOLS)), 2)
+        self.app.audio.play("select")
+        self.message = "Símbolos sorteados aleatoriamente!"
     
     def draw(self, surface):
         super().draw(surface)
