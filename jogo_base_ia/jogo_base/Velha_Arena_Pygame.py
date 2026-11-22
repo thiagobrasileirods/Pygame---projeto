@@ -198,6 +198,18 @@ class SymbolScene(Scene):
         button(surface, "Voltar", (90, 628, 210, 54))
         button(surface, "Continuar / Enter", (760, 628, 250, 54), True)
 
+    # Autoria de Rodrigo Bartolo
+    def alternar_aba(self, event):
+        """Permite trocar o jogador ativo via teclado (TAB, 1 ou 2)."""
+        if event.type != pygame.KEYDOWN:
+            return
+        if event.key == pygame.K_TAB:
+            self.active = 1 - self.active
+        elif event.key == pygame.K_1:
+            self.active = 0
+        elif event.key == pygame.K_2:
+            self.active = 1
+
 
 # 04. MENU E AJUDA ------------------------------------------------------------
 class MenuScene(Scene):
