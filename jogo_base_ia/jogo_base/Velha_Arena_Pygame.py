@@ -157,6 +157,7 @@ class SymbolScene(Scene):
         self.cards = [pygame.Rect(90 + i % 5 * 188, 265 + i // 5 * 157, 168, 138) for i in range(10)]
 
     def handle_event(self, event):
+        self.alternar_aba(event)
         if clicked(event, (90, 166, 430, 60)):
             self.active = 0
         elif clicked(event, (550, 166, 430, 60)):
@@ -173,6 +174,8 @@ class SymbolScene(Scene):
             self.app.change_scene("tabuleiro")
         elif clicked(event, (90, 628, 210, 54)) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             self.app.change_scene("inicio")
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+            self.sortear_simbolos()
 
     # Autoria de Rodrigo Bartolo
     def sortear_simbolos(self):
@@ -197,6 +200,8 @@ class SymbolScene(Scene):
         text(surface, self.message, 16, (90, 588), MUTED)
         button(surface, "Voltar", (90, 628, 210, 54))
         button(surface, "Continuar / Enter", (760, 628, 250, 54), True)
+        button(surface, "Continuar / Enter", (760, 628, 250, 54), True)
+        draw_vs_preview(surface, self.app.state["symbols"])
 
     # Autoria de Rodrigo Bartolo
     def alternar_aba(self, event):
@@ -247,6 +252,8 @@ class MenuScene(Scene):
         button(surface, "Iniciar / Enter", (390, 490, 320, 60), True)
         button(surface, "Ajuda", (390, 568, 320, 54))
         text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 666), MUTED, True)
+        text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 666), MUTED, True)
+        self.draw_preview_icons(surface)
 
     # Autoria de Rodrigo Bartolo
     def draw_preview_icons(self, surface):
@@ -535,7 +542,7 @@ class ArenaScene(Scene):
             color = PLAYER_COLORS[index]
             x = 80 if index == 0 else 650
             text(surface, f'J{index+1}  |  {WEAPONS[self.world.weapons[index]]["name"]}', 21, (x, 118), color)
-            text(surface, 'VIDAS  ' + str(player['hp']), 19, (x+235, 120), color)
+            draw_health_bar(surface, (x + 235, 122), player['hp'], 3, color)
         panel(surface, self.world.bounds, (29, 35, 40), MUTED)
         for wall in self.world.walls:
             panel(surface, wall, (69, 81, 85), CREAM)
