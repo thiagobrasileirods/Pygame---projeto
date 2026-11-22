@@ -851,6 +851,7 @@ class AudioManager:
     def __init__(self):
         self.enabled, self.muted, self.current = False, False, None
         self.sounds, self.channel = {}, None
+        self.music_volume = 0.38
         try:
             if not pygame.mixer.get_init():
                 pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
@@ -874,7 +875,7 @@ class AudioManager:
         self.channel.stop()
         if name in self.sounds:
             self.channel.play(self.sounds[name], loops=-1)
-        self.channel.set_volume(0 if self.muted else 0.38)
+        self.channel.set_volume(0 if self.muted else self.music_volume)
 
     def play(self, name):
         """Sem dispositivo, arquivo ou canal livre, o jogo segue normalmente."""
@@ -885,11 +886,15 @@ class AudioManager:
         """Silencia a trilha sem reiniciá-la e encerra efeitos ainda ativos."""
         self.muted = not self.muted
         if self.enabled:
-            self.channel.set_volume(0 if self.muted else 0.38)
+            self.channel.set_volume(0 if self.muted else self.music_volume)
             if self.muted:
                 for index in range(1, pygame.mixer.get_num_channels()):
                     pygame.mixer.Channel(index).stop()
-
+    def ajustar_volume_musica(self, variacao):
+        """Aumenta ou diminui o volume, mantendo entre 0 e 1."""
+        self.music_volume = max(0.0, min(1.0, round(self.music_volume + variacao, 2)))
+        if self.enabled and not self.muted:
+            self.channel.set_volume(self.music_volume)
 
 # 10. COORDENADOR APP: ESTADO DA SESSÃO E CONTRATOS PÚBLICOS --------------------
 class App:
@@ -965,6 +970,12 @@ class App:
             self.keys.add(event.key)
             if event.key == pygame.K_m:
                 self.audio.toggle()
+                return
+            if event.key in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS):
+                self.audio.ajustar_volume_musica(0.1)
+                return
+            if event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+                self.audio.ajustar_volume_musica(-0.1)
                 return
         self.scene.handle_event(event)
 
