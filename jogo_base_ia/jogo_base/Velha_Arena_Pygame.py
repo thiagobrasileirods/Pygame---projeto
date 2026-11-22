@@ -289,6 +289,14 @@ class BoardModel:
         if not self.draw:
             self.turn = 1 - self.turn
         return True
+    #Autoria de Thiago Brasileiro:
+    def draw_hover(self, surface):
+        """Destaca a casa livre sob o cursor do mouse."""
+        mouse_pos = pygame.mouse.get_pos()
+        color = PLAYER_COLORS[self.model.turn]
+        for index, rect in enumerate(self.cells):
+            if self.model.cells[index] is None and rect.collidepoint(mouse_pos):
+                pygame.draw.rect(surface, color, rect, 3, border_radius=12)
 
     #Autoria de Thiago Brasileiro:
     def free_cells(self):
