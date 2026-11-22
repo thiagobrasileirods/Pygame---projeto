@@ -146,6 +146,13 @@ class Scene:
         sound = "M: sem som" if self.app.audio.muted or not self.app.audio.enabled else "M: som"
         text(surface, sound, 14, (937, 718), MUTED)
 
+# Parte de Lucas Ferrari Utimura.
+def formatar_tempo(milissegundos):
+    """Converte milissegundos em MM:SS, sem exibir tempo negativo."""
+    segundos_totais = max(0, int(milissegundos) // 1000)
+    minutos = segundos_totais // 60
+    segundos = segundos_totais % 60
+    return f"{minutos:02d}:{segundos:02d}"
 
 # 03. SÍMBOLOS ---------------------------------------------------------------
 class SymbolScene(Scene):
@@ -703,6 +710,8 @@ class ArenaScene(Scene):
         #Autoria de Thiago Brasileiro
         dist = int(self.world.distance_between_players())
         text(surface, f"Distância: {dist} px", 15, (550, 100), MUTED, True) #ate aqui
+        tempo_str = formatar_tempo(int(self.world.time * 1000))
+        text(surface, f"Tempo: {tempo_str}", 16, (550, 124), CREAM, True)
         if self.world.is_overtime():
             text(surface, "PRORROGAÇÃO!", 20, (550, 148), P2, True, True)
         for index, player in enumerate(self.world.players):
