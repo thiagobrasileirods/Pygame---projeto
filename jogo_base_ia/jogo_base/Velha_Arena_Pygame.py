@@ -11,6 +11,7 @@ import argparse
 import math
 import os
 from pathlib import Path
+import random
 
 os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 try:
@@ -104,6 +105,13 @@ def draw_symbol(surface, index, center, size, color):
     pygame.draw.circle(surface, color, center, size // 2, 3)
     draw_icon(surface, "simbolo", index, center, int(size * 0.76))
 
+# Autoria de Rodrigo Bartolo
+def draw_health_bar(surface, pos, hp, max_hp, color):
+    """Desenha segmentos retangulares de vida."""
+    x, y = pos
+    for i in range(max_hp):
+        rect = pygame.Rect(x + i * 38, y, 32, 16)
+        panel(surface, rect, color if i < hp else PANEL, MUTED)
 
 class Scene:
     """Interface comum das sete telas, sem laços de execução próprios.
@@ -159,6 +167,11 @@ class SymbolScene(Scene):
         elif clicked(event, (90, 628, 210, 54)) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             self.app.change_scene("inicio")
 
+    def sortear_simbolos(jogo, recursos):
+        escolhidos = random.sample(range(10), 2)
+        jogo["simbolos"] = escolhidos
+        tocar(recursos, "select")
+    
     def draw(self, surface):
         super().draw(surface)
         text(surface, "DUAS PESSOAS. DOIS SÍMBOLOS.", 32, (90, 110), display=True)
