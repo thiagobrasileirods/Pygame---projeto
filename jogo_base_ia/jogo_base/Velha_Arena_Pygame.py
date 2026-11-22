@@ -340,7 +340,7 @@ class BoardScene(Scene):
                 text(surface, index + 1, 20, rect.center, MUTED, True)
             else:
                 draw_symbol(surface, self.app.state["symbols"][owner], rect.center, 98, PLAYER_COLORS[owner])
-            self.draw_hover(surface)
+        self.draw_hover(surface)
         for owner, x in ((0, 110), (1, 910)):
             draw_symbol(surface, self.app.state["symbols"][owner], (x + 35, 330), 84, PLAYER_COLORS[owner])
             text(surface, f"J{owner + 1}", 28, (x + 35, 410), PLAYER_COLORS[owner], True)
@@ -622,8 +622,7 @@ class WeaponScene(Scene):
                 self.app.change_scene("arena")
             else:
                 self.active = 1 - self.active
-        elif clicked(event, (50, 625, 230, 56)):
-            self.app.change_scene("tabuleiro")
+        
         #Autoria de Thiago Brasileiro
         elif clicked(event, (50, 625, 230, 56)):
             self.app.change_scene("tabuleiro")
