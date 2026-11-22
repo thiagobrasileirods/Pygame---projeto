@@ -113,6 +113,13 @@ def draw_health_bar(surface, pos, hp, max_hp, color):
         rect = pygame.Rect(x + i * 38, y, 32, 16)
         panel(surface, rect, color if i < hp else PANEL, MUTED)
 
+# Autoria de Rodrigo Bartolo
+def draw_vs_preview(surface, symbols):
+    """Mostra prévia compacta J1 VS J2 na tela de símbolos."""
+    draw_symbol(surface, symbols[0], (485, 655), 44, P1)
+    text(surface, "VS", 20, (550, 655), CREAM, True, True)
+    draw_symbol(surface, symbols[1], (615, 655), 44, P2)
+
 class Scene:
     """Interface comum das sete telas, sem laços de execução próprios.
 
