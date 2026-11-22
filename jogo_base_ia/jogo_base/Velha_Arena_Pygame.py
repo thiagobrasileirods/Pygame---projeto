@@ -289,14 +289,6 @@ class BoardModel:
         if not self.draw:
             self.turn = 1 - self.turn
         return True
-    #Autoria de Thiago Brasileiro:
-    def draw_hover(self, surface):
-        """Destaca a casa livre sob o cursor do mouse."""
-        mouse_pos = pygame.mouse.get_pos()
-        color = PLAYER_COLORS[self.model.turn]
-        for index, rect in enumerate(self.cells):
-            if self.model.cells[index] is None and rect.collidepoint(mouse_pos):
-                pygame.draw.rect(surface, color, rect, 3, border_radius=12)
 
     #Autoria de Thiago Brasileiro:
     def free_cells(self):
@@ -328,6 +320,14 @@ class BoardScene(Scene):
             elif self.model.draw:
                 self.app.audio.play("draw")
                 self.app.change_scene("armas")
+    #Autoria de Thiago Brasileiro:
+    def draw_hover(self, surface):
+        """Destaca a casa livre sob o cursor do mouse."""
+        mouse_pos = pygame.mouse.get_pos()
+        color = PLAYER_COLORS[self.model.turn]
+        for index, rect in enumerate(self.cells):
+            if self.model.cells[index] is None and rect.collidepoint(mouse_pos):
+                pygame.draw.rect(surface, color, rect, 3, border_radius=12)
 
     def draw(self, surface):
         super().draw(surface)
@@ -340,11 +340,12 @@ class BoardScene(Scene):
                 text(surface, index + 1, 20, rect.center, MUTED, True)
             else:
                 draw_symbol(surface, self.app.state["symbols"][owner], rect.center, 98, PLAYER_COLORS[owner])
+            self.draw_hover(surface)
         for owner, x in ((0, 110), (1, 910)):
             draw_symbol(surface, self.app.state["symbols"][owner], (x + 35, 330), 84, PLAYER_COLORS[owner])
             text(surface, f"J{owner + 1}", 28, (x + 35, 410), PLAYER_COLORS[owner], True)
             text(surface, f"{self.app.state['scores'][owner]} pontos", 18, (x + 35, 454), MUTED, True)
-        text(surface, "1–9 ou clique / empate abre a seleção de armas", 18, (550, 688), MUTED, True)
+        text(surface, f"Casas livres: {self.model.free_cells()}  |  1–9 ou clique", 18, (550, 688), MUTED, True)
 
 
 
@@ -401,6 +402,8 @@ class BattleWorld:
                              invulnerable=0.7, cooldown=0.0) for x in (150, 950)]
         self.bullets, self.winner = [], None
         self.time, self.notice = 0.0, 0.0
+
+    
 
     def move_player(self, index, direction, dt):
         """Normaliza a direção e resolve os eixos com subpassos de até 8 px."""
