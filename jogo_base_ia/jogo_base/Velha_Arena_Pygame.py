@@ -345,6 +345,7 @@ class BoardScene(Scene):
             draw_symbol(surface, self.app.state["symbols"][owner], (x + 35, 330), 84, PLAYER_COLORS[owner])
             text(surface, f"J{owner + 1}", 28, (x + 35, 410), PLAYER_COLORS[owner], True)
             text(surface, f"{self.app.state['scores'][owner]} pontos", 18, (x + 35, 454), MUTED, True)
+        #Autoria de Thiago Brasileiro
         text(surface, f"Casas livres: {self.model.free_cells()}  |  1–9 ou clique", 18, (550, 688), MUTED, True)
 
 
@@ -403,6 +404,14 @@ class BattleWorld:
         self.bullets, self.winner = [], None
         self.time, self.notice = 0.0, 0.0
 
+    #Autoria de Thiago Brasileiro
+    def distance_between_players(self):
+            """Retorna a distância euclidiana entre J1 e J2."""
+            return self.players[0]["pos"].distance_to(self.players[1]["pos"])
+    #Autoria de Thiago Brasileiro
+    def is_overtime(self, limit=45.0): #45 pq eu quis mesmo, nada em particular
+        """Retorna True quando o duelo ultrapassa o tempo normal."""
+        return self.time >= limit
     
 
     def move_player(self, index, direction, dt):
@@ -547,6 +556,11 @@ class ArenaScene(Scene):
 
     def draw(self, surface):
         super().draw(surface)
+        #Autoria de Thiago Brasileiro
+        dist = int(self.world.distance_between_players())
+        text(surface, f"Distância: {dist} px", 15, (550, 100), MUTED, True) #ate aqui
+        if self.world.is_overtime():
+            text(surface, "PRORROGAÇÃO!", 20, (550, 148), P2, True, True)
         for index, player in enumerate(self.world.players):
             color = PLAYER_COLORS[index]
             x = 80 if index == 0 else 650
