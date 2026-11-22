@@ -386,7 +386,13 @@ class BattleWorld:
     def __init__(self, weapons=(0, 0), lives=3):
         self.weapons = tuple(weapons)
         self.bounds = pygame.Rect(50, 170, 1000, 490)
-        self.walls = [pygame.Rect(365, 245, 38, 210), pygame.Rect(697, 375, 38, 210)]
+        self.walls = [
+            pygame.Rect(300, 265, 100, 64),  # Superior esquerda
+            pygame.Rect(700, 265, 100, 64),  # Superior direita
+            pygame.Rect(300, 501, 100, 64),  # Inferior esquerda
+            pygame.Rect(700, 501, 100, 64),  # Inferior direita
+            pygame.Rect(514, 369, 72, 92),   # Cobertura central
+        ]
         self.reset(lives)
 
     def reset(self, lives=3):
@@ -505,7 +511,138 @@ class BattleWorld:
             if fire in keys and self.shoot(index):
                 events.append('shoot')
         return events + self.update_bullets(dt)
+    
+def draw_custom_arena(surface, world):
+    """Piso industrial e cinco coberturas; self.walls continua sendo a colisão."""
+    field = world.bounds
+    previous_clip = surface.get_clip()
+    surface.set_clip(field.clip(previous_clip))
 
+    # Placas de metal no piso, com juntas discretas.
+    pygame.draw.rect(surface, (21, 29, 37), field)
+    for row, y in enumerate(range(field.top, field.bottom, 48)):
+        for column, x in enumerate(range(field.left, field.right, 48)):
+            color = (25, 34, 43) if (row + column) % 2 else (23, 31, 39)
+            pygame.draw.rect(surface, color, (x + 1, y + 1, 46, 46))
+
+    # Marcações centrais e linha tracejada de divisão.
+    for y in range(field.top + 18, field.bottom - 18, 25):
+        pygame.draw.line(
+            surface, (51, 65, 76),
+            (field.centerx, y), (field.centerx, y + 10), 2
+        )
+    for radius in (88, 102):
+        pygame.draw.circle(surface, (44, 58, 69), field.center, radius, 2)
+
+    # Bases decorativas, sem bloquear ou proteger os jogadores.
+    for index, x in enumerate((field.left + 100, field.right - 100)):
+        color = PLAYER_COLORS[index]
+        pad = pygame.Rect(0, 0, 124, 108)
+        pad.center = (x, field.centery)
+        tint = tuple(20 + component // 10 for component in color)
+
+        pygame.draw.rect(surface, tint, pad, border_radius=14)
+        pygame.draw.rect(surface, color, pad, 2, border_radius=14)
+
+        for offset in (-24, 0, 24):
+            pygame.draw.line(
+                surface, color,
+                (x + offset - 7, pad.top + 12),
+                (x + offset + 7, pad.top + 12), 2
+            )
+        text(surface, f"BASE J{index + 1}", 12,
+             (x, pad.bottom - 15), color, True)
+
+    # O corpo de cada caixa coincide com seu retângulo de colisão.
+    for index, wall in enumerate(world.walls):
+        pygame.draw.rect(
+            surface, (11, 17, 23), wall.move(5, 7), border_radius=3
+        )
+        pygame.draw.rect(surface, (99, 117, 130), wall)
+        pygame.draw.rect(surface, (46, 61, 74), wall.inflate(-4, -4))
+
+        inner = wall.inflate(-14, -16)
+        pygame.draw.rect(surface, (33, 46, 57), inner)
+
+        # Reforços em X e bordas iluminadas.
+        pygame.draw.line(
+            surface, (66, 84, 98), inner.topleft, inner.bottomright, 4
+        )
+        pygame.draw.line(
+            surface, (66, 84, 98), inner.topright, inner.bottomleft, 4
+        )
+        pygame.draw.line(
+            surface, (147, 164, 175),
+            wall.topleft, (wall.right - 1, wall.top), 2
+        )
+        pygame.draw.line(
+            surface, (147, 164, 175),
+            wall.topleft, (wall.left, wall.bottom - 1), 2
+        )
+
+        # Parafusos.
+        for x in (wall.left + 7, wall.right - 8):
+            for y in (wall.top + 21, wall.bottom - 8):
+                pygame.draw.circle(surface, (18, 27, 34), (x, y), 3)
+                pygame.draw.circle(surface, (170, 185, 194), (x, y), 1)
+
+        # Faixa de segurança amarela e preta.
+        stripe = pygame.Rect(
+            wall.left + 6, wall.top + 5, wall.width - 12, 8
+        )
+        pygame.draw.rect(surface, (224, 180, 62), stripe)
+        for x in range(stripe.left, stripe.right - 11, 16):
+            pygame.draw.polygon(surface, (33, 35, 33), (
+                (x, stripe.top),
+                (x + 5, stripe.top),
+                (x + 11, stripe.bottom - 1),
+                (x + 6, stripe.bottom - 1),
+            ))
+
+        # Identificação da cobertura.
+        badge = pygame.Rect(0, 0, 26, 20)
+        badge.center = (wall.centerx, wall.centery + 5)
+        pygame.draw.rect(surface, (24, 34, 43), badge, border_radius=3)
+        text(surface, f"{index + 1:02}", 13, badge.center,
+             (209, 220, 225), True, True)
+
+        accent = (
+            PLAYER_COLORS[0]
+            if wall.centerx < field.centerx
+            else PLAYER_COLORS[1]
+        )
+        if wall.centerx == field.centerx:
+            accent = (224, 180, 62)
+
+        pygame.draw.line(
+            surface, accent,
+            (wall.centerx - 13, wall.bottom - 4),
+            (wall.centerx + 13, wall.bottom - 4), 2
+        )
+
+    # Moldura e cantos nas cores das equipes.
+    pygame.draw.rect(
+        surface, (94, 116, 133),
+        field.inflate(-2, -2), 2, border_radius=12
+    )
+    for x, direction, color in (
+        (field.left + 9, 1, PLAYER_COLORS[0]),
+        (field.right - 10, -1, PLAYER_COLORS[1]),
+    ):
+        for y, vertical in (
+            (field.top + 9, 1),
+            (field.bottom - 10, -1),
+        ):
+            pygame.draw.line(
+                surface, color, (x, y),
+                (x + direction * 38, y), 3
+            )
+            pygame.draw.line(
+                surface, color, (x, y),
+                (x, y + vertical * 25), 3
+            )
+
+    surface.set_clip(previous_clip)
 
 class ArenaScene(Scene):
     title = 'ARENA'
@@ -543,9 +680,7 @@ class ArenaScene(Scene):
             x = 80 if index == 0 else 650
             text(surface, f'J{index+1}  |  {WEAPONS[self.world.weapons[index]]["name"]}', 21, (x, 118), color)
             draw_health_bar(surface, (x + 235, 122), player['hp'], 3, color)
-        panel(surface, self.world.bounds, (29, 35, 40), MUTED)
-        for wall in self.world.walls:
-            panel(surface, wall, (69, 81, 85), CREAM)
+        draw_custom_arena(surface, self.world)
         for bullet in self.world.bullets:
             pygame.draw.circle(surface, PLAYER_COLORS[bullet['owner']], bullet['pos'], bullet['radius'])
         for index, player in enumerate(self.world.players):
