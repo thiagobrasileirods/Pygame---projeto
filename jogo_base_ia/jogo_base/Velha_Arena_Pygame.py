@@ -840,9 +840,18 @@ class ResultScene(Scene):
         text(surface, reason, 24, (550, 429), MUTED, True)
         scores = self.app.state["scores"]
         text(surface, f"J1  {scores[0]}     :     {scores[1]}  J2", 36, (550, 506), CREAM, True, True)
+        stats = self.app.calcular_estatisticas()
+        text(
+            surface,
+            f"Partidas: {stats['total']}  |  J1: {stats['pct_j1']}%  |  J2: {stats['pct_j2']}%",
+            17, (550, 548), MUTED, True
+            )
         for label, x in (("Revanche / Enter", 105), ("Trocar símbolos", 410), ("Início", 715)):
             button(surface, label, (x, 594, 280, 60), x == 105)
         text(surface, f"Próxima partida: J{self.app.state['starter'] + 1} começa.", 17, (550, 681), MUTED, True)
+        if self.app.state["history"]:
+            ultimas = "  •  ".join(self.app.state["history"][-3:])
+            text(surface, f"Histórico: {ultimas}", 14, (550, 710), MUTED, True)           
 
 
 # 09. ÁUDIO: CANAL RESERVADO, MÚSICA CONTÍNUA E MODO SILENCIOSO ------------------
@@ -936,6 +945,18 @@ class App:
         self.scene = factories[name](self)
         self.audio.set_music("battle" if name in ("armas", "arena") else "calm")
 
+    def calcular_estatisticas(self):
+        """Calcula o total de partidas e a porcentagem de vitórias."""
+        p1, p2 = self.state["scores"]
+        total = p1 + p2
+        if total == 0:
+            return {"total": 0, "pct_j1": 0, "pct_j2": 0}
+        return {
+            "total": total,
+            "pct_j1": round((p1 / total) * 100),
+            "pct_j2": round((p2 / total) * 100),
+        }
+    
     def registrar_historico(self, winner, reason):
         """Guarda os cinco resultados mais recentes da sessão."""
         entrada = f"J{winner + 1} ({reason})"
