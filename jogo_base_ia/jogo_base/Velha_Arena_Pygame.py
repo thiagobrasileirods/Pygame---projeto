@@ -21,10 +21,10 @@ PLAYER_COLORS = (P1, P2)
 SYMBOLS = ("67", "Insper", "FGV", "Grok", "ChatGPT", "Claude",
            "Gemini", "Bob", "Batman", "Miranha")
 WEAPONS = [
-    dict(name="Pistola", cooldown=420, speed=650, damage=1, count=1, spread=0, radius=5, ttl=1.5),
-    dict(name="SMG", cooldown=150, speed=710, damage=1, count=1, spread=0, radius=4, ttl=1.2),
-    dict(name="Escopeta", cooldown=820, speed=590, damage=1, count=3, spread=28, radius=5, ttl=0.52),
-    dict(name="Precisão", cooldown=1100, speed=1800, damage=2, count=1, spread=0, radius=3, ttl=1.5),
+    dict(name="Pistola", cooldown=420, speed=750, damage=1, count=1, spread=0, radius=5, ttl=1.0),
+    dict(name="SMG", cooldown=150, speed=1600, damage=1, count=1, spread=200, radius=4, ttl=0.3),
+    dict(name="Escopeta", cooldown=820, speed=590, damage=1, count=3, spread=38, radius=5, ttl=0.52),
+    dict(name="Precisão", cooldown=1400, speed=3000, damage=2, count=1, spread=0, radius=3, ttl=1.5),
     dict(name="Canhão", cooldown=1200, speed=380, damage=3, count=1, spread=0, radius=13, ttl=2.6),
 ]
 SCENES = ("inicio", "ajuda", "simbolos", "tabuleiro", "armas", "arena", "resultado")
