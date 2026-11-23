@@ -1,10 +1,3 @@
-"""Velha Arena — Fight : Club | Python 3.10+ / pygame-ce.
-
-Base didática: reescrevam os blocos sinalizados antes dos próprios commits.
-Contratos: cenas.handle_event(event), update(dt em segundos), draw(surface);
-App.change_scene(name), finish_match(winner 0/1, reason); modelos abaixo.
-Referência: https://insper.github.io/DesignDeSoftware/pygame/handout/
-"""
 
 # 01. CONSTANTES E RECURSOS ----------------------------------------------------
 import argparse
@@ -146,6 +139,13 @@ class Scene:
         sound = "M: sem som" if self.app.audio.muted or not self.app.audio.enabled else "M: som"
         text(surface, sound, 14, (937, 718), MUTED)
 
+# Uma Parte de Lucas Ferrari Utimura.
+def formatar_tempo(milissegundos):
+    """Converte milissegundos em MM:SS, sem exibir tempo negativo."""
+    segundos_totais = max(0, int(milissegundos) // 1000)
+    minutos = segundos_totais // 60
+    segundos = segundos_totais % 60
+    return f"{minutos:02d}:{segundos:02d}"
 
 # 03. SÍMBOLOS ---------------------------------------------------------------
 class SymbolScene(Scene):
@@ -200,7 +200,6 @@ class SymbolScene(Scene):
         text(surface, self.message, 16, (90, 588), MUTED)
         button(surface, "Voltar", (90, 628, 210, 54))
         button(surface, "Continuar / Enter", (760, 628, 250, 54), True)
-        button(surface, "Continuar / Enter", (760, 628, 250, 54), True)
         draw_vs_preview(surface, self.app.state["symbols"])
 
     # Autoria de Rodrigo Bartolo
@@ -251,7 +250,6 @@ class MenuScene(Scene):
         text(surface, "Vença na estratégia. Desempate na arena.", 22, (550, 415), MUTED, True)
         button(surface, "Iniciar / Enter", (390, 490, 320, 60), True)
         button(surface, "Ajuda", (390, 568, 320, 54))
-        text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 666), MUTED, True)
         text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 666), MUTED, True)
         self.draw_preview_icons(surface)
 
@@ -703,6 +701,8 @@ class ArenaScene(Scene):
         #Autoria de Thiago Brasileiro
         dist = int(self.world.distance_between_players())
         text(surface, f"Distância: {dist} px", 15, (550, 100), MUTED, True) #ate aqui
+        tempo_str = formatar_tempo(int(self.world.time * 1000))
+        text(surface, f"Tempo: {tempo_str}", 16, (550, 124), CREAM, True)
         if self.world.is_overtime():
             text(surface, "PRORROGAÇÃO!", 20, (550, 148), P2, True, True)
         for index, player in enumerate(self.world.players):
@@ -821,6 +821,9 @@ class ResultScene(Scene):
             self.app.change_scene("simbolos")
         elif clicked(event, (715, 594, 280, 60)):
             self.app.change_scene("inicio")
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+            self.app.resetar_placar()
+            self.app.audio.play("select")
 
     def draw(self, surface):
         super().draw(surface)
@@ -831,9 +834,18 @@ class ResultScene(Scene):
         text(surface, reason, 24, (550, 429), MUTED, True)
         scores = self.app.state["scores"]
         text(surface, f"J1  {scores[0]}     :     {scores[1]}  J2", 36, (550, 506), CREAM, True, True)
+        stats = self.app.calcular_estatisticas()
+        text(
+            surface,
+            f"Partidas: {stats['total']}  |  J1: {stats['pct_j1']}%  |  J2: {stats['pct_j2']}%",
+            17, (550, 548), MUTED, True
+            )
         for label, x in (("Revanche / Enter", 105), ("Trocar símbolos", 410), ("Início", 715)):
             button(surface, label, (x, 594, 280, 60), x == 105)
-        text(surface, f"Próxima partida: J{self.app.state['starter'] + 1} começa.", 17, (550, 681), MUTED, True)
+        text(surface, f"Próxima partida: J{self.app.state['starter'] + 1} começa.  |  R: zerar placar", 17, (550, 681), MUTED, True)
+        if self.app.state["history"]:
+            ultimas = "  •  ".join(self.app.state["history"][-3:])
+            text(surface, f"Histórico: {ultimas}", 14, (550, 710), MUTED, True)           
 
 
 # 09. ÁUDIO: CANAL RESERVADO, MÚSICA CONTÍNUA E MODO SILENCIOSO ------------------
@@ -842,6 +854,7 @@ class AudioManager:
     def __init__(self):
         self.enabled, self.muted, self.current = False, False, None
         self.sounds, self.channel = {}, None
+        self.music_volume = 0.38
         try:
             if not pygame.mixer.get_init():
                 pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
@@ -865,7 +878,7 @@ class AudioManager:
         self.channel.stop()
         if name in self.sounds:
             self.channel.play(self.sounds[name], loops=-1)
-        self.channel.set_volume(0 if self.muted else 0.38)
+        self.channel.set_volume(0 if self.muted else self.music_volume)
 
     def play(self, name):
         """Sem dispositivo, arquivo ou canal livre, o jogo segue normalmente."""
@@ -876,11 +889,15 @@ class AudioManager:
         """Silencia a trilha sem reiniciá-la e encerra efeitos ainda ativos."""
         self.muted = not self.muted
         if self.enabled:
-            self.channel.set_volume(0 if self.muted else 0.38)
+            self.channel.set_volume(0 if self.muted else self.music_volume)
             if self.muted:
                 for index in range(1, pygame.mixer.get_num_channels()):
                     pygame.mixer.Channel(index).stop()
-
+    def ajustar_volume_musica(self, variacao):
+        """Aumenta ou diminui o volume, mantendo entre 0 e 1."""
+        self.music_volume = max(0.0, min(1.0, round(self.music_volume + variacao, 2)))
+        if self.enabled and not self.muted:
+            self.channel.set_volume(self.music_volume)
 
 # 10. COORDENADOR APP: ESTADO DA SESSÃO E CONTRATOS PÚBLICOS --------------------
 class App:
@@ -900,7 +917,7 @@ class App:
         RESOURCES = load_assets()
         self.audio = AudioManager()
         self.running, self.keys = True, set()
-        self.state = dict(symbols=[0, 1], weapons=[0, 0], scores=[0, 0], starter=0,
+        self.state = dict(symbols=[0, 1], weapons=[0, 0], scores=[0, 0], starter=0, history=[],
                           paused=False, finished=False, result=(0, "Prévia da tela de resultado"))
         self.scene, self.scene_name = None, None
         self.change_scene(initial_scene)
@@ -922,6 +939,31 @@ class App:
         self.scene = factories[name](self)
         self.audio.set_music("battle" if name in ("armas", "arena") else "calm")
 
+    def resetar_placar(self):
+        """Zera o placar e o histórico e devolve o início ao J1."""
+        self.state["scores"] = [0, 0]
+        self.state["starter"] = 0
+        self.state["history"] = []
+
+    def calcular_estatisticas(self):
+        """Calcula o total de partidas e a porcentagem de vitórias."""
+        p1, p2 = self.state["scores"]
+        total = p1 + p2
+        if total == 0:
+            return {"total": 0, "pct_j1": 0, "pct_j2": 0}
+        return {
+            "total": total,
+            "pct_j1": round((p1 / total) * 100),
+            "pct_j2": round((p2 / total) * 100),
+        }
+    
+    def registrar_historico(self, winner, reason):
+        """Guarda os cinco resultados mais recentes da sessão."""
+        entrada = f"J{winner + 1} ({reason})"
+        self.state["history"].append(entrada)
+        if len(self.state["history"]) > 5:
+            self.state["history"].pop(0)
+
     def finish_match(self, winner, reason):
         """Registra um vencedor 0/1 e abre resultado. Retorna se pontuou.
 
@@ -935,6 +977,7 @@ class App:
         self.state["scores"][winner] += 1
         self.state["starter"] = 1 - self.state["starter"]
         self.state["result"] = (winner, reason)
+        self.registrar_historico(winner, reason)
         self.change_scene("resultado")
         self.audio.play("win")
         return True
@@ -956,6 +999,12 @@ class App:
             self.keys.add(event.key)
             if event.key == pygame.K_m:
                 self.audio.toggle()
+                return
+            if event.key in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS):
+                self.audio.ajustar_volume_musica(0.1)
+                return
+            if event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+                self.audio.ajustar_volume_musica(-0.1)
                 return
         self.scene.handle_event(event)
 
