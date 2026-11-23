@@ -226,6 +226,8 @@ class MenuScene(Scene):
             self.app.change_scene("simbolos")
         elif clicked(event, (390, 568, 320, 54)):
             self.app.change_scene("ajuda")
+        elif clicked(event, (390, 632, 320, 44)):
+            self.app.toggle_fullscreen()
 
     def draw(self, surface):
         super().draw(surface)
@@ -250,7 +252,11 @@ class MenuScene(Scene):
         text(surface, "Vença na estratégia. Desempate na arena.", 22, (550, 415), MUTED, True)
         button(surface, "Iniciar / Enter", (390, 490, 320, 60), True)
         button(surface, "Ajuda", (390, 568, 320, 54))
-        text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 666), MUTED, True)
+
+        label = "Modo janela / F11" if self.app.fullscreen else "Tela cheia / F11"
+        button(surface, label, (390, 632, 320, 44))
+
+        text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 692), MUTED, True)
         self.draw_preview_icons(surface)
 
     # Autoria de Rodrigo Bartolo
@@ -912,7 +918,8 @@ class App:
         global RESOURCES
         pygame.display.init()
         pygame.font.init()
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.fullscreen = False
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED)
         pygame.display.set_caption("Velha Arena — Fight : Club")
         RESOURCES = load_assets()
         self.audio = AudioManager()
@@ -921,6 +928,23 @@ class App:
                           paused=False, finished=False, result=(0, "Prévia da tela de resultado"))
         self.scene, self.scene_name = None, None
         self.change_scene(initial_scene)
+
+    def toggle_fullscreen(self):
+        target = not self.fullscreen
+        flags = pygame.SCALED
+
+        if target:
+            flags |= pygame.FULLSCREEN
+
+        try:
+            screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
+        except pygame.error:
+            return False
+
+        self.screen = screen
+        self.fullscreen = target
+        self.keys.clear()
+        return True
 
     def change_scene(self, name):
         """Aceita os nomes em SCENES e limpa teclas ao entrar em outra tela.
@@ -997,6 +1021,12 @@ class App:
             if event.key in self.keys:
                 return
             self.keys.add(event.key)
+
+            if event.key == pygame.K_F11:
+                self.toggle_fullscreen()
+                self.keys.add(pygame.K_F11)
+                return
+
             if event.key == pygame.K_m:
                 self.audio.toggle()
                 return
