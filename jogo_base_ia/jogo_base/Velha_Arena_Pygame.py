@@ -437,8 +437,13 @@ class BattleWorld:
         direction = pygame.Vector2(direction)
         if direction.length_squared() > 0:
             direction = direction.normalize()
-        movement = direction * 255 * dt
+        
+        speed = 255
+        if player.get("sprinting", False):
+            speed *= 1.6
+        movement = direction * speed * dt
         steps = max(1, math.ceil(movement.length() / 8))
+        
         for _ in range(steps):
             for axis in (0, 1):
                 amount = movement[axis] / steps
@@ -535,6 +540,8 @@ class BattleWorld:
             player = self.players[index]
             player['invulnerable'] = max(0, player['invulnerable']-dt)
             player['cooldown'] = max(0, player['cooldown']-dt)
+            sprint_key = pygame.K_LSHIFT if index == 0 else pygame.K_RSHIFT
+            player["sprinting"] = sprint_key in keys
             self.move_player(index, ((right in keys)-(left in keys), (down in keys)-(up in keys)), dt)
         for index, (_, _, _, _, fire) in enumerate(controls):
             if fire in keys and self.shoot(index):
