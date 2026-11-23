@@ -683,7 +683,7 @@ class ArenaScene(Scene):
 
     def handle_event(self, event):
         if event.type == pygame.WINDOWFOCUSLOST or (
-            event.type == pygame.ACTIVEEVENT and not event.gain and event.state & 3
+            event.type == pygame.ACTIVEEVENT and not event.gain and event.state & pygame.APPINPUTFOCUS
         ):
             self.app.state['paused'] = True
             self.app.keys.clear()
@@ -1012,7 +1012,7 @@ class App:
             self.running = False
             return
         if event.type == pygame.WINDOWFOCUSLOST or (
-            event.type == pygame.ACTIVEEVENT and not event.gain and event.state & 3
+            event.type == pygame.ACTIVEEVENT and not event.gain and event.state & pygame.APPINPUTFOCUS
         ):
             self.keys.clear()
         if event.type == pygame.KEYUP:
