@@ -1,10 +1,3 @@
-"""Velha Arena — Fight : Club | Python 3.10+ / pygame-ce.
-
-Base didática: reescrevam os blocos sinalizados antes dos próprios commits.
-Contratos: cenas.handle_event(event), update(dt em segundos), draw(surface);
-App.change_scene(name), finish_match(winner 0/1, reason); modelos abaixo.
-Referência: https://insper.github.io/DesignDeSoftware/pygame/handout/
-"""
 
 # 01. CONSTANTES E RECURSOS ----------------------------------------------------
 import argparse
@@ -146,7 +139,7 @@ class Scene:
         sound = "M: sem som" if self.app.audio.muted or not self.app.audio.enabled else "M: som"
         text(surface, sound, 14, (937, 718), MUTED)
 
-# Parte de Lucas Ferrari Utimura.
+# Uma Parte de Lucas Ferrari Utimura.
 def formatar_tempo(milissegundos):
     """Converte milissegundos em MM:SS, sem exibir tempo negativo."""
     segundos_totais = max(0, int(milissegundos) // 1000)
@@ -830,6 +823,9 @@ class ResultScene(Scene):
             self.app.change_scene("simbolos")
         elif clicked(event, (715, 594, 280, 60)):
             self.app.change_scene("inicio")
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+            self.app.resetar_placar()
+            self.app.audio.play("select")
 
     def draw(self, surface):
         super().draw(surface)
@@ -848,7 +844,7 @@ class ResultScene(Scene):
             )
         for label, x in (("Revanche / Enter", 105), ("Trocar símbolos", 410), ("Início", 715)):
             button(surface, label, (x, 594, 280, 60), x == 105)
-        text(surface, f"Próxima partida: J{self.app.state['starter'] + 1} começa.", 17, (550, 681), MUTED, True)
+        text(surface, f"Próxima partida: J{self.app.state['starter'] + 1} começa.  |  R: zerar placar", 17, (550, 681), MUTED, True)
         if self.app.state["history"]:
             ultimas = "  •  ".join(self.app.state["history"][-3:])
             text(surface, f"Histórico: {ultimas}", 14, (550, 710), MUTED, True)           
@@ -944,6 +940,12 @@ class App:
         self.scene_name = name
         self.scene = factories[name](self)
         self.audio.set_music("battle" if name in ("armas", "arena") else "calm")
+
+    def resetar_placar(self):
+        """Zera o placar e o histórico e devolve o início ao J1."""
+        self.state["scores"] = [0, 0]
+        self.state["starter"] = 0
+        self.state["history"] = []
 
     def calcular_estatisticas(self):
         """Calcula o total de partidas e a porcentagem de vitórias."""
