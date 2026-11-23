@@ -200,7 +200,6 @@ class SymbolScene(Scene):
         text(surface, self.message, 16, (90, 588), MUTED)
         button(surface, "Voltar", (90, 628, 210, 54))
         button(surface, "Continuar / Enter", (760, 628, 250, 54), True)
-        button(surface, "Continuar / Enter", (760, 628, 250, 54), True)
         draw_vs_preview(surface, self.app.state["symbols"])
 
     # Autoria de Rodrigo Bartolo
@@ -251,7 +250,6 @@ class MenuScene(Scene):
         text(surface, "Vença na estratégia. Desempate na arena.", 22, (550, 415), MUTED, True)
         button(surface, "Iniciar / Enter", (390, 490, 320, 60), True)
         button(surface, "Ajuda", (390, 568, 320, 54))
-        text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 666), MUTED, True)
         text(surface, "RODRIGO / THIAGO / LUCAS", 14, (550, 666), MUTED, True)
         self.draw_preview_icons(surface)
 
