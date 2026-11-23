@@ -6,7 +6,7 @@ O Velha Arena consiste em um jogo da velha que aparenta ser tradicional, mas, qu
 Há possibilidade de escolher personagens e armas diversas ou randomiza-las com o botão R.
 Jogo de duas pessoas, onde os controle básicos estão nas setas e no wasd.
 
-Para rodar o jogo, basta acesssar o arquivo Velha_Arena_Pygame.py e rodá-lo ou escrever no terminal python main.py.
+Para rodar o jogo, basta acesssar o arquivo Velha_Arena_Pygame.py e rodá-lo.
 
 Outras instruções e funcionalidades estão descritas no própio jogo. 
 
