@@ -914,7 +914,7 @@ class App:
         RESOURCES = load_assets()
         self.audio = AudioManager()
         self.running, self.keys = True, set()
-        self.state = dict(symbols=[0, 1], weapons=[0, 0], scores=[0, 0], starter=0,
+        self.state = dict(symbols=[0, 1], weapons=[0, 0], scores=[0, 0], starter=0, history=[],
                           paused=False, finished=False, result=(0, "Prévia da tela de resultado"))
         self.scene, self.scene_name = None, None
         self.change_scene(initial_scene)
@@ -936,6 +936,13 @@ class App:
         self.scene = factories[name](self)
         self.audio.set_music("battle" if name in ("armas", "arena") else "calm")
 
+    def registrar_historico(self, winner, reason):
+        """Guarda os cinco resultados mais recentes da sessão."""
+        entrada = f"J{winner + 1} ({reason})"
+        self.state["history"].append(entrada)
+        if len(self.state["history"]) > 5:
+            self.state["history"].pop(0)
+
     def finish_match(self, winner, reason):
         """Registra um vencedor 0/1 e abre resultado. Retorna se pontuou.
 
@@ -949,6 +956,7 @@ class App:
         self.state["scores"][winner] += 1
         self.state["starter"] = 1 - self.state["starter"]
         self.state["result"] = (winner, reason)
+        self.registrar_historico(winner, reason)
         self.change_scene("resultado")
         self.audio.play("win")
         return True
